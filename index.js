@@ -3,7 +3,6 @@ module.change_code = 1;
 var Alexa = require('alexa-app');
 var app = new Alexa.app('study-friend');
 const fetch = require('node-fetch');
-const strings = require('./string-change.js');
 const utterances = require('./utterances.js');
 const API_URL  = 'http://localhost:4567/';
 
@@ -30,6 +29,11 @@ app.intent('GetAgenda',{
     "slots": { "date": "AMAZON.DATE" },
     'utterances': utterances.getAgenda,
   }, (req, res) => {
+      if (req.data.session.user.accessToken === undefined) {
+        res.linkAccount();
+        res.say('To start using this skill, please use the companion app to authenticate on Amazon');
+        return res.send();
+      }
       const date = req.slot("date");
       let url = API_URL + 'agenda/';
       url = createAgendaUrl(date, url);
@@ -50,6 +54,8 @@ app.intent('GetAgenda',{
       });
   });
 
+
+
 const createAgendaUrl = (date, url) => {
   console.log(url);
   if ( date.indexOf('WE') > -1 ) {
@@ -58,11 +64,10 @@ const createAgendaUrl = (date, url) => {
     url += 'week/';
   } else {
     url = url.concat('day/');
-    console.log(url);
   }
   url = url.concat(date);
   return url;
-}
+};
 
 const createAgendaResponse = (json) => {
   let returnString = 'You have ';
