@@ -3,10 +3,14 @@ module.change_code = 1;
 var Alexa = require('alexa-app');
 var app = new Alexa.app('study-friend');
 const fetch = require('node-fetch');
+const strings = require('./string-change.js');
+const utterances = require('./utterances.js');
 const API_URL  = 'http://localhost:4567/';
 
 app.launch(function(req, res) {
   console.log('Launching...');
+  // get list of subjects from API_URL
+  // add to dictionairy
   res.say('Study Friend Launched!!');
 });
 
@@ -24,28 +28,12 @@ app.intent('TestIntent',{
 
 app.intent('GetAgenda',{
     "slots": { "date": "AMAZON.DATE" },
-    'utterances': [
-      "{get|give} {the|my} agenda for {-|date}",
-      "what is my agenda like for {-|date}",
-      "what topics do I need to study {|on} {-|date}"
-    ]
+    'utterances': utterances.getAgenda,
   }, (req, res) => {
-      console.log('Getting agenda...');
       const date = req.slot("date");
       let url = API_URL + 'agenda/';
-      console.log(url);
-      if ( date.indexOf('WE') > -1 ) {
-        // Contains W
-        console.log('Weekend');
-      } else if (date.indexOf('W') > -1) {
-        console.log('Week');
-        url += 'week/';
-      } else {
-        console.log('Date');
-        url = url.concat('day/');
-        console.log(url);
-      }
-      return fetch(url + date, {
+      url = createAgendaUrl(date, url);
+      return fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -54,27 +42,41 @@ app.intent('GetAgenda',{
       }).then((response) => {
         return response.json();
       }).then((json) => {
-        let returnString = 'You have ';
-        if (json.length == 1) {
-          returnString = returnString.concat('1 topic assigned for that date: ');
-        } else if (json.length > 1) {
-          returnString = returnString.concat(json.length + ' topics assigned for that date: ');
-        } else {
-          returnString = returnString.concat('no topics assigned for that date');
-          res.say(returnString);
-          return res.send();
-        }
-
-        json.forEach((item) => {
-          returnString += item + ',';
-        });
-
-        console.log(returnString);
-        res.say(returnString);
+        res.say(createAgendaResponse(json));
         return res.send();
       }).catch(err => {
         res.say('Unable to get topics for that date');
         throw err;
       });
   });
+
+const createAgendaUrl = (date, url) => {
+  console.log(url);
+  if ( date.indexOf('WE') > -1 ) {
+    // Contains W
+  } else if (date.indexOf('W') > -1) {
+    url += 'week/';
+  } else {
+    url = url.concat('day/');
+    console.log(url);
+  }
+  url = url.concat(date);
+  return url;
+}
+
+const createAgendaResponse = (json) => {
+  let returnString = 'You have ';
+  if (json.length == 1) {
+    returnString = returnString.concat('1 topic assigned for that date: ');
+  } else if (json.length > 1) {
+    returnString = returnString.concat(json.length + ' topics assigned for that date: ');
+  } else {
+    returnString = returnString.concat('No topics assigned for that date');
+    return returnString;
+  }
+  json.forEach((item) => {
+    returnString += item + ',';
+  });
+  return returnString;
+}
 module.exports = app;
