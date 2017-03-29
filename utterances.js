@@ -11,5 +11,9 @@ module.exports = {
   getRevisionProgress: [
     "What percentage of the revision timetable have I done so far",
     "How much revision have I done",
+  ],
+  getExamStartDate: [
+    "when do my exams start",
+    "What is the exam start date"
   ]
 }
