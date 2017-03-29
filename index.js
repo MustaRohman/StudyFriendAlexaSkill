@@ -54,6 +54,32 @@ app.intent('GetAgenda',{
       });
   });
 
+app.intent('GetFreeDays', {
+  utterances: utterances.getFreeDays
+}, (req, res) => {
+  let url = API_URL + 'free';
+  return fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'UserId': req.data.session.user.userId
+    }
+  }).then((response) => {
+    return response.text();
+  }).then((text) => {
+    const extraDays = parseInt(text, 10);
+    if (extraDays <= 0) {
+      res.say('You have no extra days available');
+      return res.send();
+    } else {
+      res.say('You have ' + extraDays +' extra days available');
+      return res.send();
+    }
+  }).catch((err) => {
+    res.say('Unable to get extra days');
+    throw err;
+  });
+});
 
 
 const createAgendaUrl = (date, url) => {
