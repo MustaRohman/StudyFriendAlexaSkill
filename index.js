@@ -63,6 +63,11 @@ app.intent('GetAgenda',{
 app.intent('GetFreeDays', {
   utterances: utterances.getFreeDays
 }, (req, res) => {
+  if (req.data.session.user.accessToken === undefined) {
+    res.linkAccount();
+    res.say('To start using this skill, please use the companion app to authenticate on Amazon');
+    return res.send();
+  }
   let url = API_URL + 'free';
   return fetch(url, {
     method: 'GET',
@@ -94,6 +99,11 @@ app.intent('GetFreeDays', {
 app.intent('GetRevisionProgress', {
   'utterances': utterances.getRevisionProgress,
 }, (req, res) => {
+  if (req.data.session.user.accessToken === undefined) {
+    res.linkAccount();
+    res.say('To start using this skill, please use the companion app to authenticate on Amazon');
+    return res.send();
+  }
   const date = moment().format('YYYY-MM-DD');
   let url = API_URL + 'progress/revision/' + date;
   console.log(url);
@@ -122,6 +132,11 @@ app.intent('GetRevisionProgress', {
 app.intent('GetExamStartDate', {
   utterances: utterances.getExamStartDate
 }, (req, res) => {
+  if (req.data.session.user.accessToken === undefined) {
+    res.linkAccount();
+    res.say('To start using this skill, please use the companion app to authenticate on Amazon');
+    return res.send();
+  }
   let url = API_URL + 'exam-start';
   return fetch(url, {
     method: 'GET',
@@ -143,6 +158,8 @@ app.intent('GetExamStartDate', {
     throw err;
   });
 });
+
+
 
 
 const createAgendaUrl = (date, url) => {
