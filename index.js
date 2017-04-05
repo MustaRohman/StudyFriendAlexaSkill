@@ -11,6 +11,25 @@ app.launch(function(req, res) {
   console.log('Launching...');
   // get list of subjects from API_URL
   // add to dictionairy
+  return fetch(API_URL + 'launch', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'UserId': req.data.session.user.userId
+    }
+  }).then((response) => {
+    return response.text();
+  }).then((text) => {
+    res.say('Study Friend Launched! Check your Alexa mobile app for your code');
+    res.card({
+      type: "Simple",
+      content: 'Use the code ' + text + ' to create your timetable on the web app!'
+    });
+    return res.send();
+  }).catch(err => {
+    res.say('Unable to launch');
+    throw err;
+  });
   res.say('Study Friend Launched!!');
 });
 
@@ -35,6 +54,7 @@ app.intent('GetAgenda',{
         res.say('To start using this skill, please use the companion app to authenticate on Amazon');
         return res.send();
       }
+      console.log(req.data);
       const date = req.slot("date");
       let url = API_URL + 'agenda/';
       url = createAgendaUrl(date, url);
@@ -159,11 +179,53 @@ app.intent('GetExamStartDate', {
   });
 });
 
+app.intent('AddBreakDay',{
+    "slots": { "date": "AMAZON.DATE" },
+    'utterances': utterances.addBreakDay,
+  }, (req, res) => {
+      // if (req.data.session.user.accessToken === undefined) {
+      //   res.linkAccount();
+      //   res.say('To start using this skill, please use the companion app to authenticate on Amazon');
+      //   return res.send();
+      // }
+      const date = req.slot("date");
+      let url = API_URL + 'break/' + date;
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'UserId': req.data.session.user.userId
+        }
+      }).then((response) => {
+        return response.json();
+      }).then((json) => {
+        const period = json[date][0];
+        console.log(period.type);
+        let string = '';
+        if (period.type === 'BREAK_DAY') {
+          string = "Break day added to date " + date;
+        } else {
+          string = "Unable to add break day"
+        }
+        res.say(string);
+        res.card({
+          type: "Simple",
+          content: string
+        });
+        return res.send();
+      }).catch(err => {
+        res.say("Unable to add break day");
+        res.card({
+          type: "Simple",
+          content: err
+        });
+        return res.send();
+      });
+  });
 
 
 
 const createAgendaUrl = (date, url) => {
-  console.log(url);
   if ( date.indexOf('WE') > -1 ) {
     // Contains W
   } else if (date.indexOf('W') > -1) {
@@ -172,10 +234,12 @@ const createAgendaUrl = (date, url) => {
     url = url.concat('day/');
   }
   url = url.concat(date);
+  console.log(url);
   return url;
 };
 
 const createAgendaResponse = (json) => {
+  console.log(json);
   let returnString = 'You have ';
   if (json.length == 1) {
     returnString = returnString.concat('1 topic assigned for that date: ');

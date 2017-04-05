@@ -15,5 +15,8 @@ module.exports = {
   getExamStartDate: [
     "when do my exams start",
     "What is the exam start date"
+  ],
+  addBreakDay: [
+    "{add|put} a break {|day} {on|for} {-|date}"
   ]
 }
