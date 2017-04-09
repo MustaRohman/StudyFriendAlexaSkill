@@ -13,10 +13,11 @@ module.exports = {
     "How much revision have I done",
   ],
   getExamStartDate: [
-    "when do my exams start",
-    "What is the exam start date"
+    "when do my exams {start|begin}",
+    "{when|what} is the exam start date"
   ],
   addBreakDay: [
-    "{add|put} a break {|day} {on|for} {-|date}"
+    "{add|put} a break {|day} {|on|for} {-|date}",
+    "{add} a day off {|on|for} {-|date}"
   ]
-}
+};

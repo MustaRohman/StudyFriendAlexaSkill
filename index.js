@@ -9,8 +9,6 @@ const API_URL  = 'http://localhost:4567/';
 
 app.launch(function(req, res) {
   console.log('Launching...');
-  // get list of subjects from API_URL
-  // add to dictionairy
   return fetch(API_URL + 'launch', {
     method: 'POST',
     headers: {
@@ -33,6 +31,29 @@ app.launch(function(req, res) {
   res.say('Study Friend Launched!!');
 });
 
+app.pre = function(req, res, type) {
+  console.log('Pre request here');
+  if (typeof app.dictionary.subjects === 'undefined') {
+    console.log('Fetching subjects data');
+    return fetch(API_URL + 'subjects', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'UserId': req.data.session.user.userId
+      }
+    }).then((response) => {
+      return response.json();
+    }).then((json) => {
+      console.log(json);
+      app.dictionary = {"subjects":json};
+      console.log(app.dictionary);
+    }).catch((err) => {
+      console.log(err);
+    });
+  }
+
+};
+
 app.intent('TestIntent',{
     'utterances': ['test intent']
   }, function(req, res) {
@@ -49,11 +70,6 @@ app.intent('GetAgenda',{
     "slots": { "date": "AMAZON.DATE" },
     'utterances': utterances.getAgenda,
   }, (req, res) => {
-      if (req.data.session.user.accessToken === undefined) {
-        res.linkAccount();
-        res.say('To start using this skill, please use the companion app to authenticate on Amazon');
-        return res.send();
-      }
       console.log(req.data);
       const date = req.slot("date");
       let url = API_URL + 'agenda/';
@@ -83,11 +99,6 @@ app.intent('GetAgenda',{
 app.intent('GetFreeDays', {
   utterances: utterances.getFreeDays
 }, (req, res) => {
-  if (req.data.session.user.accessToken === undefined) {
-    res.linkAccount();
-    res.say('To start using this skill, please use the companion app to authenticate on Amazon');
-    return res.send();
-  }
   let url = API_URL + 'free';
   return fetch(url, {
     method: 'GET',
@@ -119,11 +130,6 @@ app.intent('GetFreeDays', {
 app.intent('GetRevisionProgress', {
   'utterances': utterances.getRevisionProgress,
 }, (req, res) => {
-  if (req.data.session.user.accessToken === undefined) {
-    res.linkAccount();
-    res.say('To start using this skill, please use the companion app to authenticate on Amazon');
-    return res.send();
-  }
   const date = moment().format('YYYY-MM-DD');
   let url = API_URL + 'progress/revision/' + date;
   console.log(url);
@@ -152,11 +158,6 @@ app.intent('GetRevisionProgress', {
 app.intent('GetExamStartDate', {
   utterances: utterances.getExamStartDate
 }, (req, res) => {
-  if (req.data.session.user.accessToken === undefined) {
-    res.linkAccount();
-    res.say('To start using this skill, please use the companion app to authenticate on Amazon');
-    return res.send();
-  }
   let url = API_URL + 'exam-start';
   return fetch(url, {
     method: 'GET',
@@ -183,12 +184,11 @@ app.intent('AddBreakDay',{
     "slots": { "date": "AMAZON.DATE" },
     'utterances': utterances.addBreakDay,
   }, (req, res) => {
-      // if (req.data.session.user.accessToken === undefined) {
-      //   res.linkAccount();
-      //   res.say('To start using this skill, please use the companion app to authenticate on Amazon');
-      //   return res.send();
-      // }
       const date = req.slot("date");
+      if (date.includes("W")) {
+        res.say("A break can only be added for a day. Please try again");
+        return res.send();
+      }
       let url = API_URL + 'break/' + date;
       return fetch(url, {
         method: 'POST',
@@ -227,7 +227,7 @@ app.intent('AddBreakDay',{
 
 const createAgendaUrl = (date, url) => {
   if ( date.indexOf('WE') > -1 ) {
-    // Contains W
+    url += 'weekend/';
   } else if (date.indexOf('W') > -1) {
     url += 'week/';
   } else {
@@ -254,4 +254,5 @@ const createAgendaResponse = (json) => {
   });
   return returnString;
 }
+
 module.exports = app;
