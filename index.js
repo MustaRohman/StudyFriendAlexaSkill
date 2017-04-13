@@ -32,6 +32,9 @@ app.launch(function(req, res) {
 });
 
 app.pre = function(req, res, type) {
+  console.log(type);
+  app.test = {test: 'message'};
+  console.log(app.test);
   console.log('Pre request here');
   if (typeof app.dictionary.subjects === 'undefined') {
     console.log('Fetching subjects data');
@@ -51,20 +54,7 @@ app.pre = function(req, res, type) {
       console.log(err);
     });
   }
-
 };
-
-app.intent('TestIntent',{
-    'utterances': ['test intent']
-  }, function(req, res) {
-    console.log(req.data.session.user.userId);
-      if (req.data.session.user.accessToken) {
-        res.say('Congratulations! Intent works');
-      } else {
-        res.linkAccount();
-        res.say('To start using this skill, please use the companion app to authenticate on Amazon')
-      }
-  });
 
 app.intent('GetAgenda',{
     "slots": { "date": "AMAZON.DATE" },
@@ -223,7 +213,27 @@ app.intent('AddBreakDay',{
       });
   });
 
-
+app.intent('GetTaskAtTime', {
+  'slots': { "time": "AMAZON.TIME" },
+  'utterances': utterances.addBreakDay,
+}, (req, res) => {
+  const time = req.slot("time");
+  const date = moment().format('YYYY-MM-DD');
+  const url = API_URL + 'task/' + date + '/' + time;
+  return fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'UserId': req.data.session.user.userId
+    }
+  }).then((response) => {
+    return response.json();
+  }).then((json) => {
+    console.log(json);
+  }).catch((err) => {
+    console.log(err);
+  });
+});
 
 const createAgendaUrl = (date, url) => {
   if ( date.indexOf('WE') > -1 ) {
