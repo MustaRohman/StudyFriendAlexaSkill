@@ -5,9 +5,10 @@ var app = new Alexa.app('study-friend');
 const moment = require('moment');
 const fetch = require('node-fetch');
 const launch = require('./launch.js');
-const agenda = require('./agenda.js');
-const free = require('./free.js');
-const progress = require('./progress.js');
+const agenda = require('./requests/getAgenda.js');
+const free = require('./requests/getFreeDays.js');
+const progress = require('./requests/getRevisionProgress.js');
+const examStart = require('./requests/getExamStartDate.js');
 const utterances = require('./utterances.js');
 const API_URL  = 'http://localhost:4567/';
 
@@ -46,25 +47,7 @@ app.intent('GetExamStartDate', {
   utterances: utterances.getExamStartDate
 }, (req, res) => {
   let url = API_URL + 'exam-start';
-  return fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'UserId': req.data.session.user.userId
-    }
-  }).then((response) => {
-    return response.text();
-  }).then((text) => {
-      res.say('Your exams start on ' + text);
-      res.card({
-        type: "Simple",
-        content: 'Your exams start on ' + text
-      });
-      return res.send();
-  }).catch((err) => {
-    res.say('Unable to get exam start date');
-    throw err;
-  });
+  return examStart(url, req, res);
 });
 
 app.intent('AddBreakDay',{
