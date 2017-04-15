@@ -18,8 +18,9 @@ app.launch(function(req, res) {
   }).then((response) => {
     return response.text();
   }).then((text) => {
-    res.say('Study Friend Launched! Check your Alexa mobile app for your code');
+    res.say('Study Friend Launched! Check your Alexa mobile app for your login code');
     res.card({
+      title: "StudyFriend Login",
       type: "Simple",
       content: 'Use the code ' + text + ' to create your timetable on the web app!'
     });
@@ -31,28 +32,6 @@ app.launch(function(req, res) {
   res.say('Study Friend Launched!!');
 });
 
-app.pre = function(req, res, type) {
-  console.log('Pre request here');
-  if (typeof app.dictionary.subjects === 'undefined') {
-    console.log('Fetching subjects data');
-    return fetch(API_URL + 'subjects', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'UserId': req.data.session.user.userId
-      }
-    }).then((response) => {
-      return response.json();
-    }).then((json) => {
-      console.log(json);
-      console.log('Fetched json');
-      app.dictionary = {"subjects":json};
-      console.log(app.dictionary);
-    }).catch((err) => {
-      console.log(err);
-    });
-  }
-};
 
 app.intent('GetAgenda',{
     "slots": { "date": "AMAZON.DATE" },
@@ -213,7 +192,7 @@ app.intent('AddBreakDay',{
 
 app.intent('GetTaskAtTime', {
   'slots': { "time": "AMAZON.TIME" },
-  'utterances': utterances.addBreakDay,
+  'utterances': utterances.getTaskAtTime,
 }, (req, res) => {
   const time = req.slot("time");
   console.log(time);
@@ -260,6 +239,7 @@ app.intent('GetTaskAtTime', {
     return res.send();
   });
 });
+
 
 const createAgendaUrl = (date, url) => {
   if ( date.indexOf('WE') > -1 ) {

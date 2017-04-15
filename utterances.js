@@ -19,5 +19,9 @@ module.exports = {
   addBreakDay: [
     "{add|put} a break {|day} {|on|for} {-|date}",
     "{add} a day off {|on|for} {-|date}"
+  ],
+  getTaskAtTime: [
+    "what {|task} do I have {|planned|assigned} at {-|time}",
+    "get task at {-|time}"
   ]
 };
