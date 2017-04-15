@@ -10,11 +10,13 @@
   "license": "ISC",
   "dependencies": {
     "alexa-app": "^4.0.0",
+    "bcrypt": "^1.0.2",
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "dotenv": "^4.0.0",
     "lodash": "^4.17.2",
     "mocha": "^3.1.2",
+    "moment": "^2.18.1",
     "node-fetch": "^1.6.3",
     "request": "^2.78.0",
     "request-promise": "^4.1.1"
