@@ -9,6 +9,7 @@ const agenda = require('./requests/getAgenda.js');
 const free = require('./requests/getFreeDays.js');
 const progress = require('./requests/getRevisionProgress.js');
 const examStart = require('./requests/getExamStartDate.js');
+const breakDay = require('./requests/addBreakDay.js');
 const utterances = require('./utterances.js');
 const API_URL  = 'http://localhost:4567/';
 
@@ -60,37 +61,7 @@ app.intent('AddBreakDay',{
         return res.send();
       }
       let url = API_URL + 'break/' + date;
-      return fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'UserId': req.data.session.user.userId
-        }
-      }).then((response) => {
-        return response.json();
-      }).then((json) => {
-        const period = json[date][0];
-        console.log(period.type);
-        let string = '';
-        if (period.type === 'BREAK_DAY') {
-          string = "Break day added to date " + date;
-        } else {
-          string = "Unable to add break day"
-        }
-        res.say(string);
-        res.card({
-          type: "Simple",
-          content: string
-        });
-        return res.send();
-      }).catch(err => {
-        res.say("Unable to add break day");
-        res.card({
-          type: "Simple",
-          content: err
-        });
-        return res.send();
-      });
+      return breakDay(url, date, req, res);
   });
 
 app.intent('GetTaskAtTime', {
