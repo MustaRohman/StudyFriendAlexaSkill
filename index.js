@@ -32,9 +32,6 @@ app.launch(function(req, res) {
 });
 
 app.pre = function(req, res, type) {
-  console.log(type);
-  app.test = {test: 'message'};
-  console.log(app.test);
   console.log('Pre request here');
   if (typeof app.dictionary.subjects === 'undefined') {
     console.log('Fetching subjects data');
@@ -48,6 +45,7 @@ app.pre = function(req, res, type) {
       return response.json();
     }).then((json) => {
       console.log(json);
+      console.log('Fetched json');
       app.dictionary = {"subjects":json};
       console.log(app.dictionary);
     }).catch((err) => {
@@ -218,7 +216,9 @@ app.intent('GetTaskAtTime', {
   'utterances': utterances.addBreakDay,
 }, (req, res) => {
   const time = req.slot("time");
+  console.log(time);
   const date = moment().format('YYYY-MM-DD');
+  console.log(date);
   const url = API_URL + 'task/' + date + '/' + time;
   return fetch(url, {
     method: 'GET',
@@ -227,11 +227,37 @@ app.intent('GetTaskAtTime', {
       'UserId': req.data.session.user.userId
     }
   }).then((response) => {
+    if (!response.ok) {
+      throw Error(response.statusText);
+    }
     return response.json();
   }).then((json) => {
     console.log(json);
+    let string;
+    const time = moment(json.dateTime.time.hour + ':' + json.dateTime.time.minute, ['h:m a', 'H:m'])
+        .add(json.periodDuration, 'm');
+    console.log(time);
+    if (json.type === 'BREAK' || json.type === 'REWARD') {
+      string = 'You currently have a break until ' + time.format('LT');
+    } else {
+      string = "You currently have revision of " + json.topicName + ' of subject ' + json.subjectName
+        + ' until ' + time.format('LT');
+    }
+    res.say(string);
+    res.card({
+      type: "Simple",
+      content: string
+    });
+    return res.send();
   }).catch((err) => {
     console.log(err);
+    let string = "No tasks assigned for the time: " + time;
+    res.say(string);
+    res.card({
+      type: "Simple",
+      content: string
+    });
+    return res.send();
   });
 });
 
