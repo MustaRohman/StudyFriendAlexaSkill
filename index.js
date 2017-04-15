@@ -4,32 +4,14 @@ var Alexa = require('alexa-app');
 var app = new Alexa.app('study-friend');
 const moment = require('moment');
 const fetch = require('node-fetch');
+const launch = require('./launch.js');
+const agenda = require('./agenda.js');
 const utterances = require('./utterances.js');
 const API_URL  = 'http://localhost:4567/';
 
 app.launch(function(req, res) {
   console.log('Launching...');
-  return fetch(API_URL + 'launch', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'UserId': req.data.session.user.userId
-    }
-  }).then((response) => {
-    return response.text();
-  }).then((text) => {
-    res.say('Study Friend Launched! Check your Alexa mobile app for your login code');
-    res.card({
-      title: "StudyFriend Login",
-      type: "Simple",
-      content: 'Use the code ' + text + ' to create your timetable on the web app!'
-    });
-    return res.send();
-  }).catch(err => {
-    res.say('Unable to launch');
-    throw err;
-  });
-  res.say('Study Friend Launched!!');
+  return launch(req, res);
 });
 
 
@@ -37,30 +19,10 @@ app.intent('GetAgenda',{
     "slots": { "date": "AMAZON.DATE" },
     'utterances': utterances.getAgenda,
   }, (req, res) => {
-      console.log(req.data);
       const date = req.slot("date");
       let url = API_URL + 'agenda/';
       url = createAgendaUrl(date, url);
-      return fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'UserId': req.data.session.user.userId
-        }
-      }).then((response) => {
-        return response.json();
-      }).then((json) => {
-        const string = createAgendaResponse(json)
-        res.say(string);
-        res.card({
-          type: "Simple",
-          content: string
-        });
-        return res.send();
-      }).catch(err => {
-        res.say('Unable to get topics for that date');
-        throw err;
-      });
+      return agenda(url, req, res);
   });
 
 app.intent('GetFreeDays', {
