@@ -10,6 +10,7 @@ const free = require('./requests/getFreeDays.js');
 const progress = require('./requests/getRevisionProgress.js');
 const examStart = require('./requests/getExamStartDate.js');
 const breakDay = require('./requests/addBreakDay.js');
+const task = require('./requests/getTaskAtTime.js');
 const utterances = require('./utterances.js');
 const API_URL  = 'http://localhost:4567/';
 
@@ -69,49 +70,9 @@ app.intent('GetTaskAtTime', {
   'utterances': utterances.getTaskAtTime,
 }, (req, res) => {
   const time = req.slot("time");
-  console.log(time);
   const date = moment().format('YYYY-MM-DD');
-  console.log(date);
   const url = API_URL + 'task/' + date + '/' + time;
-  return fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'UserId': req.data.session.user.userId
-    }
-  }).then((response) => {
-    if (!response.ok) {
-      throw Error(response.statusText);
-    }
-    return response.json();
-  }).then((json) => {
-    console.log(json);
-    let string;
-    const time = moment(json.dateTime.time.hour + ':' + json.dateTime.time.minute, ['h:m a', 'H:m'])
-        .add(json.periodDuration, 'm');
-    console.log(time);
-    if (json.type === 'BREAK' || json.type === 'REWARD') {
-      string = 'You currently have a break until ' + time.format('LT');
-    } else {
-      string = "You currently have revision of " + json.topicName + ' of subject ' + json.subjectName
-        + ' until ' + time.format('LT');
-    }
-    res.say(string);
-    res.card({
-      type: "Simple",
-      content: string
-    });
-    return res.send();
-  }).catch((err) => {
-    console.log(err);
-    let string = "No tasks assigned for the time: " + time;
-    res.say(string);
-    res.card({
-      type: "Simple",
-      content: string
-    });
-    return res.send();
-  });
+  return task(url, time, req, res);
 });
 
 
@@ -127,22 +88,5 @@ const createAgendaUrl = (date, url) => {
   console.log(url);
   return url;
 };
-
-const createAgendaResponse = (json) => {
-  console.log(json);
-  let returnString = 'You have ';
-  if (json.length == 1) {
-    returnString = returnString.concat('1 topic assigned for that date: ');
-  } else if (json.length > 1) {
-    returnString = returnString.concat(json.length + ' topics assigned for that date: ');
-  } else {
-    returnString = returnString.concat('No topics assigned for that date');
-    return returnString;
-  }
-  json.forEach((item) => {
-    returnString += item + ',';
-  });
-  return returnString;
-}
 
 module.exports = app;
