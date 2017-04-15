@@ -6,6 +6,8 @@ const moment = require('moment');
 const fetch = require('node-fetch');
 const launch = require('./launch.js');
 const agenda = require('./agenda.js');
+const free = require('./free.js');
+const progress = require('./progress.js');
 const utterances = require('./utterances.js');
 const API_URL  = 'http://localhost:4567/';
 
@@ -13,7 +15,6 @@ app.launch(function(req, res) {
   console.log('Launching...');
   return launch(req, res);
 });
-
 
 app.intent('GetAgenda',{
     "slots": { "date": "AMAZON.DATE" },
@@ -29,31 +30,7 @@ app.intent('GetFreeDays', {
   utterances: utterances.getFreeDays
 }, (req, res) => {
   let url = API_URL + 'free';
-  return fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'UserId': req.data.session.user.userId
-    }
-  }).then((response) => {
-    return response.text();
-  }).then((text) => {
-    const extraDays = parseInt(text, 10);
-    if (extraDays <= 0) {
-      res.say('You have no extra days available');
-      return res.send();
-    } else {
-      res.say('You have ' + extraDays +' extra days available');
-      res.card({
-        type: "Simple",
-        content: 'You have ' + extraDays +' extra days available'
-      });
-      return res.send();
-    }
-  }).catch((err) => {
-    res.say('Unable to get extra days');
-    throw err;
-  });
+  return free(url, req, res);
 });
 
 app.intent('GetRevisionProgress', {
@@ -62,26 +39,7 @@ app.intent('GetRevisionProgress', {
   const date = moment().format('YYYY-MM-DD');
   let url = API_URL + 'progress/revision/' + date;
   console.log(url);
-  return fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'UserId': req.data.session.user.userId
-    }
-  }).then((response) => {
-    return response.text();
-  }).then((text) => {
-    res.say('You are ' + text + ' percent through your revision timetable');
-    res.card({
-      type: "Simple",
-      title: "Progress", // this is not required for type Simple
-      content: "You are ' + text + ' percent through your revision timetable"
-    });
-    return res.send();
-  }).catch((err) => {
-    res.say('Unable revision progress info');
-    throw err;
-  });
+  return progress(url, req, res);
 });
 
 app.intent('GetExamStartDate', {

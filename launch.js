@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const API_URL  = 'http://localhost:4567/';
 
-module.exports = function (req, res) {
+module.exports = (req, res) => {
   return fetch(API_URL + 'launch', {
     method: 'POST',
     headers: {

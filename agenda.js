@@ -18,7 +18,8 @@ const createAgendaResponse = (json) => {
   return returnString;
 };
 
-module.exports = function (url, req, res) {
+module.exports = (url, req, res) => {
+  console.log('Retrieving..');
   return fetch(url, {
     method: 'GET',
     headers: {
@@ -26,7 +27,6 @@ module.exports = function (url, req, res) {
       'UserId': req.data.session.user.userId
     }
   }).then((response) => {
-    console.log(response);
     return response.json();
   }).then((json) => {
     const string = createAgendaResponse(json)
