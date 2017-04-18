@@ -4,11 +4,11 @@ const createAgendaResponse = (json) => {
   console.log(json);
   let returnString = 'You have ';
   if (json.length == 1) {
-    returnString = returnString.concat('1 topic assigned for that date: ');
+    returnString = returnString.concat('1 topic assigned for that period: ');
   } else if (json.length > 1) {
-    returnString = returnString.concat(json.length + ' topics assigned for that date: ');
+    returnString = returnString.concat(json.length + ' topics assigned for that period: ');
   } else {
-    returnString = returnString.concat('No topics assigned for that date');
+    returnString = returnString.concat('No topics assigned for that period');
     return returnString;
   }
   json.forEach((item) => {
@@ -37,7 +37,12 @@ module.exports = (url, req, res) => {
     });
     return res.send();
   }).catch(err => {
+    console.log(err);
     res.say('Unable to get topics for that date');
-    throw err;
+    res.card({
+      type: "Simple",
+      content: 'Unable to get topics for that date'
+    });
+    return res.send();
   });
 };

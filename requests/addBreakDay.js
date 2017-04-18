@@ -28,10 +28,10 @@ module.exports = (url, date, req, res) => {
     return res.send();
   }).catch(err => {
     console.log(err);
-    res.say("Unable to add break day");
+    res.say("Unable to add break day to the date " + date);
     res.card({
       type: "Simple",
-      content: err
+      content: "Unable to add break day to date " + date
     });
     return res.send();
   });

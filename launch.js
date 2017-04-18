@@ -22,5 +22,4 @@ module.exports = (req, res) => {
     res.say('Unable to launch');
     throw err;
   });
-  res.say('Study Friend Launched!!');
 };

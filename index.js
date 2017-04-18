@@ -1,7 +1,7 @@
 'use strict';
 module.change_code = 1;
-var Alexa = require('alexa-app');
-var app = new Alexa.app('study-friend');
+const Alexa = require('alexa-app');
+const app = new Alexa.app('study-friend');
 const moment = require('moment');
 const fetch = require('node-fetch');
 const launch = require('./launch.js');
@@ -14,7 +14,7 @@ const task = require('./requests/getTaskAtTime.js');
 const utterances = require('./utterances.js');
 const API_URL  = 'http://localhost:4567/';
 
-app.launch(function(req, res) {
+app.launch((req, res) => {
   console.log('Launching...');
   return launch(req, res);
 });
@@ -23,7 +23,7 @@ app.intent('GetAgenda',{
     "slots": { "date": "AMAZON.DATE" },
     'utterances': utterances.getAgenda,
   }, (req, res) => {
-      const date = req.slot("date");
+      const date = req.slot("date");``
       let url = API_URL + 'agenda/';
       url = createAgendaUrl(date, url);
       return agenda(url, req, res);
